@@ -40,7 +40,7 @@ class LoginTest < ApplicationSystemTestCase
     assert page.has_content?('Bienvenido')
   end
 
-  test 'users email is invalid if it is not part of @michelada domain' do
+  test 'any user email is valid' do
     visit new_user_registration_path
 
     fill_in 'user[email]', with: 'normal_user@gmail.com'
@@ -48,7 +48,7 @@ class LoginTest < ApplicationSystemTestCase
     fill_in 'user[password_confirmation]', with: '123456'
 
     click_button 'Registrarse'
-    assert page.has_content?('E-mail no válido')
+    assert page.has_content?('Debes crear primero tu equipo')
   end
 
   test 'user can logout' do

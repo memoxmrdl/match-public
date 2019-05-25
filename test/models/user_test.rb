@@ -36,11 +36,11 @@ class UserTest < ActiveSupport::TestCase
     refute user.valid?
   end
 
-  test 'user must be invalid if email is not from michelada domain' do
+  test 'user can be valid if email is not from michelada domain' do
     user = User.new(email: 'miguel.urbina@gmail.com',
                     password: 'normalUser',
                     password_confirmation: 'normalUser')
-    refute user.valid?
+    assert user.valid?
   end
 
   test 'user must be valid' do
