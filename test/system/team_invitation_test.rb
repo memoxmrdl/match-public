@@ -79,7 +79,7 @@ class TeamInvitationTest < ApplicationSystemTestCase
     assert page.has_content?(I18n.t('team.invalid_user'))
   end
 
-  test 'user can not invite someone with an invalid email when creating a team' do
+  test 'user can  invite someone with any email when creating a team' do
     user = users(:user)
     sign_in user
 
@@ -87,10 +87,10 @@ class TeamInvitationTest < ApplicationSystemTestCase
     fill_in 'user_invitations[email_1]', with: 'miguel.urbina@mich.io'
 
     click_button 'Crear'
-    assert page.has_content?(I18n.t('team.messages.error_users'))
+    assert page.has_content?('Equipo creado')
   end
 
-  test 'user can not invite someone with an invalid email through invitation view' do
+  test 'user can  invite someone with any email through invitation view' do
     user = users(:user)
     sign_in user
 
@@ -98,7 +98,8 @@ class TeamInvitationTest < ApplicationSystemTestCase
     fill_in 'user_invitations[email_1]', with: 'miguel.urbina@michelado.io'
 
     click_button 'Crear'
-    assert page.has_content?(I18n.t('team.messages.error_users'))
+
+    assert page.has_content?('Equipo creado')
   end
 
   test 'user can see the link and go to the invitation view' do

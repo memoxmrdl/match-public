@@ -32,8 +32,7 @@ class User < ApplicationRecord
   has_many :feedback, dependent: :destroy
   devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :validatable, validate_on_invite: true
-  VALID_EMAIL_REGEX = /~*@michelada.io\z/i.freeze
-  validates :email, presence: true, format: { with: VALID_EMAIL_REGEX }, uniqueness: { case_sensitive: false }
+  validates :email, presence: true, uniqueness: { case_sensitive: false }
   enum role: %i[user judge admin]
   scope :all_except_actual, ->(actual_user) { where.not(id: actual_user).order('email ASC') }
 
@@ -56,7 +55,7 @@ class User < ApplicationRecord
   end
 
   def can_be_invited?
-    !User.find_by_email(email)&.current_team && email.match?(VALID_EMAIL_REGEX)
+    !User.find_by_email(email)&.current_team
   end
 
   def initialize_user

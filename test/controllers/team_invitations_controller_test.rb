@@ -8,13 +8,13 @@ class TeamInvitationControllerTest < ActionDispatch::IntegrationTest
     @match = Match.last
   end
 
-  test 'user can not invite with an invalid email' do
+  test 'user can invite any user with any email' do
     user = users(:user_test1)
     post match_team_invitations_path(@match, user.current_team), params: {
-      email: 'example_user@michelado.io'
+      email: 'example_user@gmail.io'
     }
 
-    assert_equal flash[:alert], I18n.t('team.invalid_user')
+    assert_equal I18n.t('team.messages.user_invited'), flash[:notice]
   end
 
   test 'user can invite a new user' do
