@@ -32,7 +32,7 @@ set :puma_init_active_record, false  # Change to true if using ActiveRecord
 
 ## Defaults:
 # set :scm,           :git
-# set :branch,        :master
+set :branch,        :develop
 # set :format,        :pretty
 # set :log_level,     :debug
 # set :keep_releases, 5
@@ -50,7 +50,7 @@ namespace :puma do
     end
   end
 
-  before :start, :make_dirs
+  before "deploy:starting", "puma:make_dirs"
 end
 
 namespace :deploy do
@@ -65,11 +65,18 @@ namespace :deploy do
     end
   end
 
+  desc "Make sure bundler is installer"
+  task :bundle_install do
+    on roles(:app) do
+      execute "#{fetch(:rbenv_prefix)} gem install bundler"
+    end
+  end
+
   desc 'Initial Deploy'
   task :initial do
     on roles(:app) do
       before 'deploy:restart', 'puma:start'
-      invoke 'deploy'
+      invoke '  deploy'
     end
   end
 
@@ -80,10 +87,11 @@ namespace :deploy do
     end
   end
 
-  before :starting,     :check_revision
+  # before :starting,     :check_revision
   after  :finishing,    :compile_assets
   after  :finishing,    :cleanup
   after  :finishing,    :restart
+  before "bundler:install", "deploy:bundle_install"
 end
 
 # ps aux | grep puma    # Get puma pid
