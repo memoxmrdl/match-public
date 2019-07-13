@@ -9,9 +9,11 @@ set :puma_workers,    0
 
 set :rbenv_type, :user # or :system, depends on your rbenv setup
 set :rbenv_ruby, '2.5.3'
+set :bundle_flags, "--deployment --quiet"
+set :bundle_path, -> { shared_path.join('bundle') }
 
 set :rbenv_prefix, "RBENV_ROOT=#{fetch(:rbenv_path)} RBENV_VERSION=#{fetch(:rbenv_ruby)} #{fetch(:rbenv_path)}/bin/rbenv exec"
-set :rbenv_map_bins, %w{rake gem bundle ruby rails}
+
 set :rbenv_roles, :all # default value
 
 # Don't change these unless you know what you're doing
@@ -40,7 +42,8 @@ set :branch,        :develop
 ## Linked Files & Directories (Default None):
 # set :linked_files, %w{config/database.yml}
 # set :linked_dirs,  %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
-append: linked_files 'master.key', 'config/master.key'
+append :linked_files, 'config/master.key', 'config/master.key'
+append :linked_dirs, '.bundle'
 
 namespace :puma do
   desc 'Create Directories for Puma Pids and Socket'
@@ -50,6 +53,12 @@ namespace :puma do
       execute "mkdir #{shared_path}/tmp/pids -p"
     end
   end
+
+  # task :start do
+  #   on roles(:app) do
+  #     execute "#{fetch(:rbenv_prefix)} puma -C /home/deploy/apps/match-public/shared/puma.rb --daemon"
+  #   end
+  # end
 
   before "deploy:starting", "puma:make_dirs"
 end
@@ -69,7 +78,8 @@ namespace :deploy do
   desc "Make sure bundler is installer"
   task :bundle_install do
     on roles(:app) do
-      execute "#{fetch(:rbenv_prefix)} gem install bundler"
+      execute "#{fetch(:rbenv_prefix)} gem install --force bundler -v 1.17.3"
+      execute "#{fetch(:rbenv_prefix)} bundler -v"
     end
   end
 
@@ -79,14 +89,14 @@ namespace :deploy do
   task :initial do
     on roles(:app) do
       before 'deploy:restart', 'puma:start'
-      invoke '  deploy'
+      invoke 'deploy'
     end
   end
 
   desc 'Restart application'
   task :restart do
     on roles(:app), in: :sequence, wait: 5 do
-      invoke 'puma:restart'
+      # invoke 'puma:restart'
     end
   end
 
