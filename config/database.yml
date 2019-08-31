@@ -23,6 +23,11 @@ test:
 production:
   <<: *default
   database: mcm_production
+  username: doadmin
+  password: p9dd26w0qowa4n1u hide
+  host: private-db-postgresql-sfo2-02516-do-user-6085405-0.db.ondigitalocean.com
+  port: 25060
+  sslmode: require
 
 staging:
   <<: *default

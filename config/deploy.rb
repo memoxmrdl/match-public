@@ -42,7 +42,7 @@ set :branch,        :develop
 ## Linked Files & Directories (Default None):
 # set :linked_files, %w{config/database.yml}
 # set :linked_dirs,  %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
-append :linked_files, 'config/master.key', 'config/master.key'
+set :linked_files, fetch(:linked_files, []).push("config/master.key")
 append :linked_dirs, '.bundle'
 
 namespace :puma do
@@ -63,6 +63,10 @@ namespace :puma do
   before "deploy:starting", "puma:make_dirs"
 end
 
+namespace :setup do
+
+end
+
 namespace :deploy do
   desc "Make sure local git is in sync with remote."
   task :check_revision do
@@ -75,10 +79,20 @@ namespace :deploy do
     end
   end
 
+  desc "setup: copy config/master.key to shared/config"
+  task :copy_linked_master_key do
+    on roles(:app) do
+      puts ">>>>>>>>>"
+      sudo :mkdir, "-pv", shared_path
+      upload! "config/master.key", "#{shared_path}/config/master.key"
+      sudo :chmod, "600", "#{shared_path}/config/master.key"
+    end
+  end
+
   desc "Make sure bundler is installer"
   task :bundle_install do
     on roles(:app) do
-      execute "#{fetch(:rbenv_prefix)} gem install --force bundler -v 1.17.3"
+      execute "#{fetch(:rbenv_prefix)} gem install --force bundler -v 2.0.1"
       execute "#{fetch(:rbenv_prefix)} bundler -v"
     end
   end
@@ -105,6 +119,7 @@ namespace :deploy do
   after  :finishing,    :cleanup
   after  :finishing,    :restart
   before "bundler:install", "deploy:bundle_install"
+  before "deploy:check:linked_files", "deploy:copy_linked_master_key"
 end
 
 # ps aux | grep puma    # Get puma pid
