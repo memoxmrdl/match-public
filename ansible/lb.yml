@@ -1,0 +1,41 @@
+---
+- hosts: balancer
+  remote_user: root
+  become: yes
+  vars:
+    user: deploy
+  tasks:
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+    - name: Add deploy user
+      user:
+        name: deploy
+        shell: /bin/bash
+    - name: Add SSH key to server for deploy user
+      authorized_key:
+        user: deploy
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnEBkNSceB/QRnMUWsEWiqZ5HE9B0gYyUpZrGdNK/cUy//wNXQR2keANQupZxPjAOUbLBNH7LzRYYErBRLTSJQtB6zuQiwLWko0mDMs1UGV7+K6piMPWyn9imaVYAyz0p4Wg3RugqlNnNNH/1VDCV81aVy3LQzUAqZWVwGJxHs6qigJfFOXfIpccI3UGGbaxQH1FgNk0UjfpnHvx9yPkAP6PWXtGRtZjS0QUvtmyf/I88Uj6hHTXA5Th2qXt8aKADKjbSfIHAZ0ZBAvdZm3cxcwbXihnk6TKeBhb3f2agyCPnryyg0NDS/F9MGZhV0qhnSZv99pvevNE6RjW4e7ke9 hector.bustillos@crowdint.com"
+    - name: Install NGINX
+      apt:
+        name: ['nginx']
+        update_cache: yes
+    - name: Ansible delete file example
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+    - name: copy nginx configuration file
+      template:
+        src: nginx.conf.balancer
+        dest: /etc/nginx/conf.d/load-balancer.conf
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+      notify: restart nginx
+
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

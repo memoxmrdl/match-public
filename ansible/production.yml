@@ -1,0 +1,10 @@
+rails:
+  hosts:
+    x.x.x.x:
+      ansible_user: root
+    x.x.x.x:
+      ansible_user: root
+balancer:
+   hosts:
+     x.x.x.x:
+       ansible_user: root

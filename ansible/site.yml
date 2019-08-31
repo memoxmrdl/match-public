@@ -1,0 +1,116 @@
+---
+- hosts: rails
+  remote_user: root
+  become: yes
+  vars:
+    user: deploy
+    ruby_version: 2.5.3
+  tasks:
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+    - name: Add deploy user
+      user:
+        name: deploy
+        shell: /bin/bash
+    - name: Add SSH key to server for deploy user
+      authorized_key:
+        user: deploy
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnEBkNSceB/QRnMUWsEWiqZ5HE9B0gYyUpZrGdNK/cUy//wNXQR2keANQupZxPjAOUbLBNH7LzRYYErBRLTSJQtB6zuQiwLWko0mDMs1UGV7+K6piMPWyn9imaVYAyz0p4Wg3RugqlNnNNH/1VDCV81aVy3LQzUAqZWVwGJxHs6qigJfFOXfIpccI3UGGbaxQH1FgNk0UjfpnHvx9yPkAP6PWXtGRtZjS0QUvtmyf/I88Uj6hHTXA5Th2qXt8aKADKjbSfIHAZ0ZBAvdZm3cxcwbXihnk6TKeBhb3f2agyCPnryyg0NDS/F9MGZhV0qhnSZv99pvevNE6RjW4e7ke9 hector.bustillos@crowdint.com"
+    - name: Install Ruby dependencies
+      apt:
+        name: ['autoconf', 'bison', 'build-essential', 'libssl-dev', 'libyaml-dev', 'libreadline6-dev', 'zlib1g-dev', 'libncurses5-dev', 'libffi-dev', 'libgdbm5', 'libgdbm-dev', 'curl', 'git-core', 'nginx', 'nodejs', 'yarn', 'gcc']
+        update_cache: yes
+
+
+    # postgresql
+    - name: install postgres
+      apt:
+        name: ['postgresql', 'postgresql-contrib', 'libpq-dev', 'python-psycopg2']
+        update_cache: yes
+
+    - name: Set postgresql user
+      become: true
+      become_user: postgres
+      postgresql_user:
+        user: "deploy"
+        password: "123qwe123"
+        role_attr_flags: "CREATEDB,NOSUPERUSER"
+
+
+    - name: create postgresql db
+      become: true
+      become_user: postgres
+      postgresql_db:
+        name: "mcm_production"
+        state: present
+
+
+    #rbenv install
+    - name: Install rbenv | Clone repo
+      become: yes
+      become_user: deploy
+      git: repo=https://github.com/sstephenson/rbenv.git dest=~/.rbenv accept_hostkey=yes update=yes
+
+    - name: Install rbenv | Create plugins directory
+      become: yes
+      become_user: deploy
+      file: path=~/.rbenv/plugins/ mode=0755 state=directory
+
+    - name: Install rbenv | Install ruby-build plugin
+      become: yes
+      become_user: deploy
+      git: repo=git://github.com/sstephenson/ruby-build.git dest=~/.rbenv/plugins/ruby-build accept_hostkey=yes
+
+    - name: Install rbenv | Add path to profile
+      become: yes
+      become_user: deploy
+      lineinfile: line='export PATH="$HOME/.rbenv/bin:$PATH"' regexp="\$HOME\/\.rbenv\/bin:\$PATH" dest=~/.bashrc
+
+    - name: Install rbenv | Enable shims in profile
+      become: yes
+      become_user: deploy
+      lineinfile: line='eval "$(rbenv init -)"' regexp="rbenv init \-" dest=~/.bashrc
+
+    - name: Check rbenv version
+      become: yes
+      become_user: deploy
+      shell: "/home/deploy/.rbenv/bin/rbenv versions | grep {{ ruby_version }}"
+      register: rbenv_check_install
+      changed_when: False
+      ignore_errors: yes
+
+    - name: Install Ruby | Install version
+      become: yes
+      become_user: deploy
+      shell: /home/deploy/.rbenv/bin/rbenv install {{ ruby_version }}
+      when: rbenv_check_install|failed
+
+
+    - name: Install Ruby | Set default version and rehash
+      become: yes
+      become_user: deploy
+      shell: /home/deploy/.rbenv/bin/rbenv global {{ ruby_version }} && /home/deploy/.rbenv/bin/rbenv rehash executable=/bin/bash
+      when: rbenv_check_install|failed
+
+    - name: Make sure we have a 'wheel' group
+      group:
+        name: wheel
+        state: present
+
+    - name: Allow 'wheel' group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Add sudoers users to wheel group
+      user: name=deploy groups=wheel append=yes state=present createhome=yes
+
+    # gem updaye --sysrem
+    # - name: Update gem system
+    #   become: yes
+    #   become_user: deploy
+    #   command: 'gem update --system'
