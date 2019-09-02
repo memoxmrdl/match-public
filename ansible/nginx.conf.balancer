@@ -1,8 +1,8 @@
 
    upstream backend {
       ip_hash;
-      server 165.22.128.231;
-      server 104.248.191.107;
+      server 104.248.177.30;
+      server 165.22.141.135;
    }
 
    # This server accepts all traffic to port 80 and passes it to the upstream.

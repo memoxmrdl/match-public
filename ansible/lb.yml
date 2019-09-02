@@ -15,7 +15,7 @@
     - name: Add SSH key to server for deploy user
       authorized_key:
         user: deploy
-        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnEBkNSceB/QRnMUWsEWiqZ5HE9B0gYyUpZrGdNK/cUy//wNXQR2keANQupZxPjAOUbLBNH7LzRYYErBRLTSJQtB6zuQiwLWko0mDMs1UGV7+K6piMPWyn9imaVYAyz0p4Wg3RugqlNnNNH/1VDCV81aVy3LQzUAqZWVwGJxHs6qigJfFOXfIpccI3UGGbaxQH1FgNk0UjfpnHvx9yPkAP6PWXtGRtZjS0QUvtmyf/I88Uj6hHTXA5Th2qXt8aKADKjbSfIHAZ0ZBAvdZm3cxcwbXihnk6TKeBhb3f2agyCPnryyg0NDS/F9MGZhV0qhnSZv99pvevNE6RjW4e7ke9 hector.bustillos@crowdint.com"
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDT4bbzMVO1EWbvBQkSk/or7qJTcXyfwtPWQHAlmvYhyW2K5CVIqj0rx/TFnRDN7hMm7XMzKk08N6DbUzg21YnraGsbRoRA4NEqNJJjdmBz7yYkpNVNpWV6OOT6t/UIPLRMXmf6bNsvmDUDpljPb8TQXu+xJtQUdxMbzU7YgBrnnAJ9fD8oPfPaJuMIFjJ5KGtvLpb8NvZhdIiWOuddqW8M34xqMCiZpueZ8hEigT58guFRUZ1geJZKiwf1INnUdqnqruuyQ7FlfcLlM60yrq6m8Ao1F9lO2P7QNDf+RV17fYOAhA0FEweIkcBPoarSZnGo0C6878sC7LE26/VuGJDT guillermo@michelada.io"
     - name: Install NGINX
       apt:
         name: ['nginx']

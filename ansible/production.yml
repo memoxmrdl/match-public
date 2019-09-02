@@ -1,10 +1,10 @@
 rails:
   hosts:
-    x.x.x.x:
+    104.248.177.30:
       ansible_user: root
-    x.x.x.x:
+    165.22.141.135:
       ansible_user: root
 balancer:
    hosts:
-     x.x.x.x:
+     104.248.190.238:
        ansible_user: root
